@@ -22,7 +22,8 @@ install ingress-nginx on kind (if required),
 
 taint nodes labeled with app=mysql with app=mysql:NoSchedule (or apply taints as required),
 
-run helm dependency update . and helm upgrade --install todoapp . -n todoapp,
+helm dependency update .infrastructure/helm-chart/todoapp
+helm upgrade --install todoapp .infrastructure/helm-chart/todoapp -n todoapp
 
 and save kubectl get all,cm,secret,ing -A output to output.log.
 
