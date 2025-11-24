@@ -1,0 +1,55 @@
+common:
+  namespace: todoapp
+
+
+todoapp:
+  image:
+    name: todoapp
+    repository: ikulyk404/todoapp
+    version: 4.0.1
+
+  secrets:
+    SECRET_KEY: secretvalue
+    DB_NAME: tododb
+    DB_USER: todo_user
+    DB_PASSWORD: s3cr3t
+    DB_HOST: db.internal
+
+  resources:
+    requests:
+      memory: "128Mi"
+      cpu: "40m"
+    limits:
+      memory: "128Mi"
+      cpu: "40m"
+
+  hpa:
+    minReplicas: 2
+    maxReplicas: 5
+    cpu:
+      averageUtilization: 70
+    memory:
+      averageUtilization: 70
+
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+
+  nodeAffinity:
+    weight: 1
+    key: app
+    values:
+      - kube2py
+
+  capacity:
+    storage: 1Gi
+
+  pvc:
+    resources:
+      requests:
+        storage: 1Gi
+
+  serviceAccountName:
+    name: secrets-reader

@@ -1,0 +1,39 @@
+common:
+  namespace: mysql
+
+mysql:
+  image:
+    repository: mysql
+    tag: "8.0"
+
+  secrets:
+    MYSQL_ROOT_PASSWORD: "1234"
+    MYSQL_USER: "app_user"
+    MYSQL_PASSWORD: "1234"
+
+  statefulset:
+    replicas: 2
+
+  storage:
+    size: 2Gi
+
+  affinity:
+    nodeAffinity:
+      key: "app"
+      values:
+        - "mysql"
+    podAntiAffinity:
+      key: "app"
+      values:
+        - "mysql"
+      topologyKey: "kubernetes.io/hostname"
+  tolerations:
+      key: "app"
+      operator: "Equal"
+      value: "mysql"
+      effect: "NoSchedule"
+
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi

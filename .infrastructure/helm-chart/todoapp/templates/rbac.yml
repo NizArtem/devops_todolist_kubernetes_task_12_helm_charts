@@ -1,7 +1,7 @@
 kind: ServiceAccount
 apiVersion: v1
 metadata:
-  name: secrets-reader
+  name: {{ .Values.todoapp.serviceAccountName.name }}
   namespace: mateapp
 
 ---
@@ -9,7 +9,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   namespace: mateapp
-  name: secrets-reader
+  name: {{ .Values.todoapp.serviceAccountName.name }}
 rules:
 - apiGroups: [""]
   resources: ["secrets"]
@@ -19,12 +19,12 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: secrets-reader-binding
+  name: {{ .Values.todoapp.serviceAccountName.name }}-binding
   namespace: mateapp
 subjects:
 - kind: ServiceAccount
-  name: secrets-reader
+  name: {{ .Values.todoapp.serviceAccountName.name }}
 roleRef:
   kind: Role
-  name: secrets-reader
+  name: {{ .Values.todoapp.serviceAccountName.name }}
   apiGroup: rbac.authorization.k8s.io

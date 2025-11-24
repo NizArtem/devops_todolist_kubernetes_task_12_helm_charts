@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: todoapp
-  namespace: todoapp
+  name: {{ .Chart.Name }}
+  namespace: {{ .Values.common.namespace }}
 spec:
   strategy:
-    type: RollingUpdate
+    type: {{ .Values.todoapp.strategy.type }}
     rollingUpdate:
-      maxSurge: 1
-      maxUnavailable: 1
+      maxSurge: {{ .Values.todoapp.strategy.rollingUpdate.maxSurge }}
+      maxUnavailable: {{ .Values.todoapp.strategy.rollingUpdate.maxUnavailable }}
   selector:
     matchLabels:
       app: todoapp
@@ -17,10 +17,10 @@ spec:
       labels:
         app: todoapp
     spec:
-      serviceAccountName: secrets-reader
+      serviceAccountName: {{ .Values.todoapp.serviceAccountName.name }}
       containers:
       - name: todoapp
-        image: ikulyk404/todoapp:4.0.1
+        image: {{ .Values.todoapp.image.repository }}:{{ .Values.todoapp.image.version }}
         volumeMounts:
         - name: data
           mountPath: /app/data
@@ -32,42 +32,24 @@ spec:
           readOnly: true
         resources:
           requests:
-            memory: "256Mi"
-            cpu: "150m"
+            memory: {{ .Values.todoapp.resources.requests.memory }}
+            cpu: {{ .Values.todoapp.resources.requests.cpu }}
           limits:
-            memory: "256Mi"
-            cpu: "150m"
+            memory: {{ .Values.todoapp.resources.limits.memory }}
+            cpu: {{ .Values.todoapp.resources.limits.cpu }}
         env:
         - name: PYTHONUNBUFFERED
           valueFrom:
             configMapKeyRef:
               name: app-config
               key: PYTHONUNBUFFERED
-        - name: SECRET_KEY
+{{- range $k, $v := .Values.todoapp.secrets }}
+        - name: "{{ $k }}"
           valueFrom:
             secretKeyRef:
               name: app-secret
-              key: SECRET_KEY
-        - name: DB_NAME
-          valueFrom:
-            secretKeyRef:
-              name: app-secret
-              key: DB_NAME
-        - name: DB_USER
-          valueFrom:
-            secretKeyRef:
-              name: app-secret
-              key: DB_USER
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: app-secret
-              key: DB_PASSWORD
-        - name: DB_HOST
-          valueFrom:
-            secretKeyRef:
-              name: app-secret
-              key: DB_HOST
+              key: "{{ $k }}"
+{{- end }}
         ports:
         - containerPort: 8080
         livenessProbe:
@@ -95,10 +77,12 @@ spec:
       affinity:
         nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 1
-            preference:
-              matchExpressions:
-              - key: app
-                operator: In
-                values:
-                - kube2py
+            - weight: {{ .Values.todoapp.nodeAffinity.weight }}
+              preference:
+                matchExpressions:
+                  - key: "{{ .Values.todoapp.nodeAffinity.key }}"
+                    operator: In
+                    values:
+{{- range $v := .Values.todoapp.nodeAffinity.values }}
+                      - "{{ $v }}"
+{{- end }}
